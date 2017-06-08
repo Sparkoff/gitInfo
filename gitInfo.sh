@@ -361,6 +361,7 @@ staging() {
     # get number of staged files, trim result to convert to integer
     staging=$(git status --porcelain | grep "^[MARD]" | wc -l);
     staging=$(trim "$staging");
+    root=$(git rev-parse --show-toplevel);
 
     if [ $staging -gt 0 ]; then
         # draw method call for sub-title
@@ -376,10 +377,10 @@ staging() {
 
             if [[ $status == "M" ]]; then
                 label="  Modified";
-                diff=$(diffStat "${REPLY:3}" cached);
+                diff=$(diffStat "$root/${REPLY:3}" cached);
             elif [[ $status == "A" ]]; then
                 label="  Added";
-                diff=$(diffStat "${REPLY:3}" cached);
+                diff=$(diffStat "$root/${REPLY:3}" cached);
             elif [[ $status == "R" ]]; then
                 label="  Renamed";
                 diff="?"
@@ -404,6 +405,7 @@ changes() {
     # get number of unstaged files, trim result to convert to integer
     changes=$(git status --porcelain | grep "^.[MD]" | wc -l);
     changes=$(trim "$changes");
+    root=$(git rev-parse --show-toplevel);
 
     if [ $changes -gt 0 ]; then
         # draw method call for sub-title
@@ -419,7 +421,7 @@ changes() {
 
             if [[ $status == "M" ]]; then
                 label="  Modified";
-                diff=$(diffStat "${REPLY:3}");
+                diff=$(diffStat "$root/${REPLY:3}");
             elif [[ $status == "D" ]]; then
                 label="  Deleted";
                 diff=$(git diff --stat HEAD | grep ${REPLY:3} | grep -o ' [0-9]\{1,\} ');
@@ -440,6 +442,7 @@ untracked() {
     # get number of untracked files, trim result to convert to integer
     untracked=$(git status --porcelain -u | grep "^??" | wc -l);
     untracked=$(trim "$untracked");
+    root=$(git rev-parse --show-toplevel);
 
     if [ $untracked -gt 0 ]; then
         # draw method call for sub-title
@@ -448,7 +451,7 @@ untracked() {
         # cycling all porcelain status, use -u to get untracked files in porcelain status
         git status --porcelain -u | grep "^[??]" | while read -r ; do
             label="  Untracked";
-            diff=$(cat "${REPLY:3}" | wc -l);
+            diff=$(cat "$root/${REPLY:3}" | wc -l);
 
             # draw method call for unstaged status
             drawLine "$label" "${REPLY:3}" "${diff// /}+";
